@@ -1,0 +1,10 @@
+Package: com.kindadev.RemoteTweet
+Name: RemoteTweet
+Depends: mobilesubstrate, preferenceloader
+Version: 0.1
+Architecture: iphoneos-arm
+Description: Tweet from remote.app.
+Depiction: http://kindadev.com/cydia/RemoteTweet.html
+Maintainer: kinda <kinda.dev@gmail.com>
+Author: kinda <kinda.dev@gmail.com>
+Section: Tweaks

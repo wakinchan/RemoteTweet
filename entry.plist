@@ -1,0 +1,10 @@
+{
+	entry = {
+		bundle = "RemoteTweetSettings";
+		cell = PSLinkCell;
+		detail = "RemoteTweetListController";
+		icon = "RemoteTweet.png";
+		isController = 1;
+		label = RemoteTweet;
+	};
+}
