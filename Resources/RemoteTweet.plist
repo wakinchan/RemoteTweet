@@ -70,6 +70,8 @@
 			<true/>
 			<key>label</key>
 			<string>Twitter</string>
+			<key>footerText</key>
+			<string>"Twitter (iOS 5 or higher)" only supports the display of Artwork.</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -90,6 +92,8 @@
 			<string>com.kindadev.RemoteTweet.settingschanged</string>
 			<key>validTitles</key>
 			<array>
+				<string>Twitter (iOS 5 or higher)</string>
+				<string>Facebook (iOS 6)</string>
 				<string>Tweetbot</string>
 				<string>Twitter</string>
 				<string>Echofon</string>
@@ -103,6 +107,8 @@
 				<string>2</string>
 				<string>3</string>
 				<string>4</string>
+				<string>5</string>
+				<string>6</string>
 			</array>
 		</dict>
 		<dict>

@@ -1,4 +1,5 @@
 #import <UIKit/UIKit.h>
+#import <Social/Social.h>
 
 #define M_ARTIST @"_ARTIST_"
 #define M_SONG   @"_SONG_"
@@ -8,8 +9,10 @@
 static NSString *artist;
 static NSString *song;
 static NSString *album;
+static UIImage *artwork;
 static int choice;
 static NSString *format;
+UIViewController *viewController;
 
 @interface MRNowPlayingTitle : UIView
 @end
@@ -18,8 +21,13 @@ static NSString *format;
 @property(readonly) MRNowPlayingTitle * titleView;
 @end
 
-%hook MRNowPlayingScreen
+@interface MRNowPlayingFrontScreen
+@end
 
+@interface MRPlayerScreenBase
+@end
+
+%hook MRNowPlayingScreen
 - (void)viewDidLoad
 {
 	%orig;
@@ -38,33 +46,69 @@ static NSString *format;
 
 	NSString *encodedString = (NSString *)CFURLCreateStringByAddingPercentEscapes(NULL, (CFStringRef)cStr, NULL,  (CFStringRef)@"&=-#", kCFStringEncodingUTF8);
 
-	if (choice == 0 && [[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"tweetbot://"]])
+
+    if (choice == 0)
+    {
+        SLComposeViewController *twitterPostVC = [SLComposeViewController composeViewControllerForServiceType:SLServiceTypeTwitter];
+        [twitterPostVC setInitialText:cStr];
+        [twitterPostVC addImage:artwork];
+        [viewController presentViewController:twitterPostVC animated:YES completion:nil];
+	}
+    else if (choice == 1)
+    {
+        SLComposeViewController *facebookPostVC = [SLComposeViewController composeViewControllerForServiceType:SLServiceTypeFacebook];
+        [facebookPostVC setInitialText:cStr];
+        [facebookPostVC addImage:artwork];
+        [viewController presentViewController:facebookPostVC animated:YES completion:nil];
+    }
+    else if (choice == 2 && [[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"tweetbot://"]])
 		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[NSString stringWithFormat:@"tweetbot:///post?text=%@", encodedString]]];
-	else if (choice == 1 && [[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"twitter://"]])
+	else if (choice == 3 && [[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"twitter://"]])
 		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[NSString stringWithFormat:@"twitter://post?message=%@", encodedString]]];
-	else if (choice == 2 && [[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"echofon://"]])
+	else if (choice == 4 && [[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"echofon://"]])
     	[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[NSString stringWithFormat:@"echofon:///message?%@", encodedString]]];
-	else if (choice == 3 && [[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"echofonpro://"]])
+	else if (choice == 5 && [[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"echofonpro://"]])
     	[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[NSString stringWithFormat:@"echofonpro:///message?%@", encodedString]]];
-    else if (choice == 4)
+    else if (choice == 6)
        	[UIPasteboard generalPasteboard].string = encodedString;
     else
        	[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[NSString stringWithFormat:@"http://twitter.com/home?status=%@", encodedString]]];
 }
-
 %end
 
 %hook MRNowPlayingTitle
-
 - (void)layoutLabels
 {
-	%orig;
+    %orig;
 
-	artist = MSHookIvar<UILabel *>(self, "_artist").text;
-	song = MSHookIvar<UILabel *>(self, "_song").text;
-	album = MSHookIvar<UILabel *>(self, "_album").text;
+    artist = MSHookIvar<UILabel *>(self, "_artist").text;
+    song = MSHookIvar<UILabel *>(self, "_song").text;
+    album = MSHookIvar<UILabel *>(self, "_album").text;
 }
+%end
 
+%hook MRNowPlayingFrontScreen
+- (void)setArtworkImage:(id)arg1
+{
+    %orig;
+    artwork = arg1;
+}
+%end
+
+%hook MRiTunesInterface_iPhone
+- (id)nowPlayingScreen
+{
+    id tmp = %orig;
+    viewController = tmp;
+    return tmp;
+}
+%end
+
+%hook MRPlayerScreenBase
+- (void)viewDidLoad
+{
+    %orig;
+}
 %end
 
 static void LoadSettings()
