@@ -1,13 +1,13 @@
-ARCHS = armv7
 THEOS_INSTALL_KILL = Remote
-THEOS_DEVICE_IP = 192.168.1.106
-TARGET = iphone:clang::4.0
+THEOS_DEVICE_IP = 192.168.1.105
+TARGET = iphone:clang::5.0
+GO_EASY_ON_ME=1
 
 include theos/makefiles/common.mk
 
 TWEAK_NAME = RemoteTweet
 RemoteTweet_FILES = Tweak.xm
-RemoteTweet_FRAMEWORKS = UIKit Social
+RemoteTweet_FRAMEWORKS = UIKit Twitter Social
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 
@@ -22,3 +22,9 @@ include $(THEOS_MAKE_PATH)/bundle.mk
 internal-stage::
 	$(ECHO_NOTHING)mkdir -p $(THEOS_STAGING_DIR)/Library/PreferenceLoader/Preferences$(ECHO_END)
 	$(ECHO_NOTHING)cp entry.plist $(THEOS_STAGING_DIR)/Library/PreferenceLoader/Preferences/RemoteTweet.plist$(ECHO_END)
+
+real-clean:
+	rm -rf _
+	rm -rf .obj
+	rm -rf .theos
+	rm -rf *.deb

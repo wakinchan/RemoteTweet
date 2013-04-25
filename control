@@ -1,9 +1,9 @@
 Package: com.kindadev.RemoteTweet
 Name: RemoteTweet
-Depends: mobilesubstrate, preferenceloader
-Version: 0.2
+Depends: mobilesubstrate, preferenceloader, firmware (>= 5.0)
+Version: 0.4
 Architecture: iphoneos-arm
-Description: Tweet from remote.app.
+Description: Enhance the Remote.app. Add Share Function.
 Depiction: http://kindadev.com/cydia/RemoteTweet.html
 Maintainer: kinda <kinda.dev@gmail.com>
 Author: kinda <kinda.dev@gmail.com>

@@ -127,7 +127,7 @@
 			<key>cell</key>
 			<string>PSTitleValueCell</string>
 			<key>label</key>
-			<string>RemoteTweet Ver.0.1</string>
+			<string>RemoteTweet Ver.0.4</string>
 		</dict>
 		<dict>
 			<key>alignment</key>
