@@ -101,7 +101,6 @@ static inline void postFunction()
 - (void)layoutLabels
 {
     %orig;
-
     artist = MSHookIvar<UILabel *>(self, "_artist").text;
     song = MSHookIvar<UILabel *>(self, "_song").text;
     album = MSHookIvar<UILabel *>(self, "_album").text;

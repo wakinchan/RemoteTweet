@@ -7,7 +7,8 @@ include theos/makefiles/common.mk
 
 TWEAK_NAME = RemoteTweet
 RemoteTweet_FILES = Tweak.xm
-RemoteTweet_FRAMEWORKS = UIKit Twitter Social
+RemoteTweet_FRAMEWORKS = UIKit
+RemoteTweet_LDFLAGS = -weak_framework Twitter -weak_framework Social
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 
