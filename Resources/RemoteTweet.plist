@@ -112,6 +112,22 @@
 			</array>
 		</dict>
 		<dict>
+			<key>alternateColors</key>
+			<true/>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.kindadev.RemoteTweet</string>
+			<key>key</key>
+			<string>isArtworkEnabled</string>
+			<key>label</key>
+			<string>Enable the Artwork</string>
+			<key>PostNotification</key>
+			<string>com.kindadev.RemoteTweet.settingschanged</string>
+		</dict>
+		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>isStaticText</key>
@@ -127,7 +143,7 @@
 			<key>cell</key>
 			<string>PSTitleValueCell</string>
 			<key>label</key>
-			<string>RemoteTweet Ver.0.4</string>
+			<string>RemoteTweet Ver.1.0</string>
 		</dict>
 		<dict>
 			<key>alignment</key>
@@ -138,16 +154,6 @@
 			<string>Follow @wa_kinchan</string>
 			<key>action</key>
 			<string>openTwitter:</string>
-		</dict>
-		<dict>
-			<key>alignment</key>
-			<integer>2</integer>
-			<key>cell</key>
-			<string>PSButtonCell</string>
-			<key>label</key>
-			<string>Help &amp; Support: kinchan blog</string>
-			<key>action</key>
-			<string>openBlog:</string>
 		</dict>
 	</array>
 </dict>

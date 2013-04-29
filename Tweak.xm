@@ -14,6 +14,7 @@ static NSString *album;
 static UIImage *artwork;
 static int choice;
 static NSString *format;
+static BOOL isArtworkEnabled;
 UIViewController *viewController;
 
 @interface MRNowPlayingScreen
@@ -29,19 +30,19 @@ static inline void postFunction()
     cStr = [cStr stringByReplacingOccurrencesOfString:M_ALBUM withString:album];
     NSString *encodedString = (NSString *)CFURLCreateStringByAddingPercentEscapes(NULL, (CFStringRef)cStr, NULL,  (CFStringRef)@"&=-#", kCFStringEncodingUTF8);
 
-    if (choice == 0)
+    if (choice == 0 && kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_5_0)
     {
         if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_6_0) {
             SLComposeViewController *twitterPostVC = [SLComposeViewController composeViewControllerForServiceType:SLServiceTypeTwitter];
             [twitterPostVC setInitialText:cStr];
-            [twitterPostVC addImage:artwork];
+            if (isArtworkEnabled) [twitterPostVC addImage:artwork];
             [viewController presentViewController:twitterPostVC animated:YES completion:nil];
         }
         else
         {
             TWTweetComposeViewController *tweetViewController = [[TWTweetComposeViewController alloc] init];
             [tweetViewController setInitialText:cStr];
-            [tweetViewController addImage:artwork];
+            if (isArtworkEnabled) [tweetViewController addImage:artwork];
             tweetViewController.completionHandler = ^(TWTweetComposeViewControllerResult result) {
                 [viewController dismissModalViewControllerAnimated:YES];
             };
@@ -66,7 +67,7 @@ static inline void postFunction()
     else if (choice == 6)
         [UIPasteboard generalPasteboard].string = encodedString;
     else
-        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:[NSString stringWithFormat:@"http://twitter.com/home?status=%@", encodedString]]];
+        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:[NSString stringWithFormat:@"http://twitter.com/intent/tweet?text=%@", encodedString]]];
 }
 
 %hook MRNowPlayingScreen
@@ -131,6 +132,8 @@ static void LoadSettings()
 	choice = choicePref ? [choicePref intValue] : 0;
     id formatPref = [dict objectForKey:@"Format"];
     format = formatPref ? [formatPref copy] : @"_ARTIST_ - _SONG_ (_ALBUM_) #NowPlaying";
+    id artworkPref = [dict objectForKey:@"isArtworkEnabled"];
+    isArtworkEnabled = artworkPref ? [artworkPref boolValue] : YES;
 }
 
 static void PostNotification(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo)
