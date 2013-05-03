@@ -53,7 +53,7 @@ static inline void postFunction()
     {
         SLComposeViewController *facebookPostVC = [SLComposeViewController composeViewControllerForServiceType:SLServiceTypeFacebook];
         [facebookPostVC setInitialText:cStr];
-        [facebookPostVC addImage:artwork];
+        if (isArtworkEnabled) [facebookPostVC addImage:artwork];
         [viewController presentViewController:facebookPostVC animated:YES completion:nil];
     }
     else if (choice == 2 && [[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"tweetbot://"]])

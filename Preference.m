@@ -25,4 +25,10 @@ __attribute__((visibility("hidden")))
 	[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://kindadev.com/blog/"]];
 }
 
+- (void)openTwitterSorega4:(id)specifier {
+	if ([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"tweetbot://"]])
+		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"tweetbot:///user_profile/sorega4"]];
+	else [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://twitter.com/sorega4/"]];
+}
+
 @end
