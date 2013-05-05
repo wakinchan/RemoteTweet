@@ -14,6 +14,7 @@ static NSString *album;
 static UIImage *artwork;
 static int choice;
 static NSString *format;
+static NSString *formatPad;
 static BOOL isArtworkEnabled;
 UIViewController *viewController;
 
@@ -22,12 +23,28 @@ UIViewController *viewController;
 @property(retain) UIView * bottomBar;
 @end
 
+static BOOL IsPad()
+{
+    return UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad;
+}
+
 static inline void postFunction()
 {
+    NSLog(@"viewController :%@", viewController);
+
     NSString *cStr = [[NSString alloc] init];
-    cStr = [format stringByReplacingOccurrencesOfString:M_ARTIST withString:artist];
-    cStr = [cStr stringByReplacingOccurrencesOfString:M_SONG withString:song];
-    cStr = [cStr stringByReplacingOccurrencesOfString:M_ALBUM withString:album];
+    if (IsPad())
+    {
+        cStr = [formatPad stringByReplacingOccurrencesOfString:M_ARTIST withString:artist];
+        cStr = [cStr stringByReplacingOccurrencesOfString:M_SONG withString:song];
+    }
+    else
+    {        
+        cStr = [format stringByReplacingOccurrencesOfString:M_ARTIST withString:artist];
+        cStr = [cStr stringByReplacingOccurrencesOfString:M_SONG withString:song];
+        cStr = [cStr stringByReplacingOccurrencesOfString:M_ALBUM withString:album];
+
+    }
     NSString *encodedString = (NSString *)CFURLCreateStringByAddingPercentEscapes(NULL, (CFStringRef)cStr, NULL,  (CFStringRef)@"&=-#", kCFStringEncodingUTF8);
 
     if (choice == 0 && kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_5_0)
@@ -73,9 +90,9 @@ static inline void postFunction()
 %hook MRNowPlayingScreen
 - (void)viewDidLoad
 {
-	%orig;
+    %orig;
 
-	UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPress:)];
+    UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPress:)];
     [[self titleView] addGestureRecognizer:longPress];   
     [longPress release];
 
@@ -92,7 +109,7 @@ static inline void postFunction()
 }
 
 %new(v@:@)
-- (void)longPress:(UILongPressGestureRecognizer*)gesture 
+- (void)longPress:(UILongPressGestureRecognizer *)gesture 
 {
     postFunction();
 }
@@ -108,11 +125,43 @@ static inline void postFunction()
 }
 %end
 
+%hook MRPlayerScreen_iPad
+- (void)viewDidLoad
+{
+    %orig;
+    UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPress:)];
+    UIView *view = MSHookIvar<UIView *>(self, "_artistSongAlbumContainer");
+    [view addGestureRecognizer:longPress];   
+    [longPress release];
+}
+
+%new(v@:@)
+- (void)longPress:(UILongPressGestureRecognizer *)gesture 
+{
+    postFunction();
+}
+
+- (void)layoutArtistSongAlbumLabels
+{
+    %orig;
+    artist = MSHookIvar<UILabel *>(self, "_albumArtistLabel").text;
+    song = MSHookIvar<UILabel *>(self, "_songLabel").text;
+}
+%end
+
 %hook MRNowPlayingFrontScreen
 - (void)setArtworkImage:(id)arg1
 {
-    %orig;
     artwork = arg1;
+    %orig;
+}
+%end
+
+%hook MRNowPlayingScreen_iPad
+- (void)setArtworkImage:(id)arg1
+{
+    artwork = arg1;
+    %orig;
 }
 %end
 
@@ -125,13 +174,24 @@ static inline void postFunction()
 }
 %end
 
+%hook MRiTunesInterface_iPad
+- (id)currentMainContentScreen
+{
+    id tmp = %orig;
+    viewController = tmp;
+    return tmp;
+}
+%end
+
 static void LoadSettings()
 {
     NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:PREF_PATH];
-	id choicePref = [dict objectForKey:@"choice"];
-	choice = choicePref ? [choicePref intValue] : 0;
+    id choicePref = [dict objectForKey:@"choice"];
+    choice = choicePref ? [choicePref intValue] : 0;
     id formatPref = [dict objectForKey:@"Format"];
     format = formatPref ? [formatPref copy] : @"_ARTIST_ - _SONG_ (_ALBUM_) #NowPlaying";
+    id formatPadPref = [dict objectForKey:@"FormatPad"];
+    formatPad = formatPadPref ? [formatPadPref copy] : @"_SONG_ / _ARTIST_ #NowPlaying";
     id artworkPref = [dict objectForKey:@"isArtworkEnabled"];
     isArtworkEnabled = artworkPref ? [artworkPref boolValue] : YES;
 }
