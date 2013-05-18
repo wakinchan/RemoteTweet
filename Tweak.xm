@@ -16,22 +16,20 @@ static int choice;
 static NSString *format;
 static NSString *formatPad;
 static BOOL isArtworkEnabled;
-UIViewController *viewController;
+static UIViewController *viewController;
 
 @interface MRNowPlayingScreen
 @property(readonly) id titleView;
 @property(retain) UIView * bottomBar;
 @end
 
-static BOOL IsPad()
+static inline BOOL IsPad()
 {
     return UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad;
 }
 
-static inline void postFunction()
+static inline NSString* ConvertFormat()
 {
-    NSLog(@"viewController :%@", viewController);
-
     NSString *cStr = [[NSString alloc] init];
     if (IsPad())
     {
@@ -43,8 +41,13 @@ static inline void postFunction()
         cStr = [format stringByReplacingOccurrencesOfString:M_ARTIST withString:artist];
         cStr = [cStr stringByReplacingOccurrencesOfString:M_SONG withString:song];
         cStr = [cStr stringByReplacingOccurrencesOfString:M_ALBUM withString:album];
-
     }
+    return cStr;
+}
+
+static inline void PostFunction()
+{
+    NSString *cStr = ConvertFormat();
     NSString *encodedString = (NSString *)CFURLCreateStringByAddingPercentEscapes(NULL, (CFStringRef)cStr, NULL,  (CFStringRef)@"&=-#", kCFStringEncodingUTF8);
 
     if (choice == 0 && kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_5_0)
@@ -105,13 +108,13 @@ static inline void postFunction()
 %new(v@:@)
 - (void)btnTaped:(UIButton *)sender
 {
-    postFunction();
+    PostFunction();
 }
 
 %new(v@:@)
 - (void)longPress:(UILongPressGestureRecognizer *)gesture 
 {
-    postFunction();
+    PostFunction();
 }
 %end
 
@@ -138,7 +141,7 @@ static inline void postFunction()
 %new(v@:@)
 - (void)longPress:(UILongPressGestureRecognizer *)gesture 
 {
-    postFunction();
+    PostFunction();
 }
 
 - (void)layoutArtistSongAlbumLabels
