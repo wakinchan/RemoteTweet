@@ -72,7 +72,7 @@ static inline void PostFunction()
         {
             TWTweetComposeViewController *tweetViewController = [[TWTweetComposeViewController alloc] init];
             [tweetViewController setInitialText:cStr];
-            if (isArtworkEnabled && [MD5String(artwork) isEqualToString:MISSING_MD5])
+            if (isArtworkEnabled && ![MD5String(artwork) isEqualToString:MISSING_MD5])
                 [tweetViewController addImage:artwork];
             tweetViewController.completionHandler = ^(TWTweetComposeViewControllerResult result) {
                 [viewController dismissModalViewControllerAnimated:YES];
@@ -84,7 +84,7 @@ static inline void PostFunction()
     {
         SLComposeViewController *facebookPostVC = [SLComposeViewController composeViewControllerForServiceType:SLServiceTypeFacebook];
         [facebookPostVC setInitialText:cStr];
-        if (isArtworkEnabled && [MD5String(artwork) isEqualToString:MISSING_MD5])
+        if (isArtworkEnabled && ![MD5String(artwork) isEqualToString:MISSING_MD5])
             [facebookPostVC addImage:artwork];
         [viewController presentViewController:facebookPostVC animated:YES completion:nil];
     }
@@ -244,4 +244,3 @@ static void PostNotification(CFNotificationCenterRef center, void *observer, CFS
         LoadSettings();
     }
 }
-
