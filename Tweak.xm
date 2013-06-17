@@ -1,12 +1,21 @@
 #import <UIKit/UIKit.h>
 #import <Twitter/TWTweetComposeViewController.h>
 #import <Social/Social.h>
-#import "Firmware.h"
+#import <CoreGraphics/CoreGraphics.h>
+#import <CommonCrypto/CommonDigest.h>
 
 #define M_ARTIST @"_ARTIST_"
 #define M_SONG   @"_SONG_"
 #define M_ALBUM  @"_ALBUM_"
 #define PREF_PATH @"/var/mobile/Library/Preferences/com.kindadev.RemoteTweet.plist"
+#define MISSING_MD5 @"d70f15fef16c1b2c838df6e29984e831"
+
+#ifndef kCFCoreFoundationVersionNumber_iOS_5_0
+#define kCFCoreFoundationVersionNumber_iOS_5_0 675.00
+#endif
+#ifndef kCFCoreFoundationVersionNumber_iOS_6_0
+#define kCFCoreFoundationVersionNumber_iOS_6_0 793.00
+#endif
 
 static NSString *artist;
 static NSString *song;
@@ -18,10 +27,10 @@ static NSString *formatPad;
 static BOOL isArtworkEnabled;
 static UIViewController *viewController;
 
-@interface MRNowPlayingScreen
-@property(readonly) id titleView;
-@property(retain) UIView * bottomBar;
-@end
+static inline BOOL IsPad();
+static inline NSString* ConvertFormat();
+static inline void PostFunction();
+static inline NSString * MD5String(UIImage *image);
 
 static inline BOOL IsPad()
 {
@@ -55,14 +64,16 @@ static inline void PostFunction()
         if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iOS_6_0) {
             SLComposeViewController *twitterPostVC = [SLComposeViewController composeViewControllerForServiceType:SLServiceTypeTwitter];
             [twitterPostVC setInitialText:cStr];
-            if (isArtworkEnabled) [twitterPostVC addImage:artwork];
+            if (isArtworkEnabled && ![MD5String(artwork) isEqualToString:MISSING_MD5])
+                [twitterPostVC addImage:artwork];
             [viewController presentViewController:twitterPostVC animated:YES completion:nil];
         }
         else
         {
             TWTweetComposeViewController *tweetViewController = [[TWTweetComposeViewController alloc] init];
             [tweetViewController setInitialText:cStr];
-            if (isArtworkEnabled) [tweetViewController addImage:artwork];
+            if (isArtworkEnabled && [MD5String(artwork) isEqualToString:MISSING_MD5])
+                [tweetViewController addImage:artwork];
             tweetViewController.completionHandler = ^(TWTweetComposeViewControllerResult result) {
                 [viewController dismissModalViewControllerAnimated:YES];
             };
@@ -73,7 +84,8 @@ static inline void PostFunction()
     {
         SLComposeViewController *facebookPostVC = [SLComposeViewController composeViewControllerForServiceType:SLServiceTypeFacebook];
         [facebookPostVC setInitialText:cStr];
-        if (isArtworkEnabled) [facebookPostVC addImage:artwork];
+        if (isArtworkEnabled && [MD5String(artwork) isEqualToString:MISSING_MD5])
+            [facebookPostVC addImage:artwork];
         [viewController presentViewController:facebookPostVC animated:YES completion:nil];
     }
     else if (choice == 2 && [[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"tweetbot://"]])
@@ -90,15 +102,35 @@ static inline void PostFunction()
         [[UIApplication sharedApplication] openURL:[NSURL URLWithString:[NSString stringWithFormat:@"http://twitter.com/intent/tweet?text=%@", encodedString]]];
 }
 
+static inline NSString * MD5String(UIImage *image)
+{
+    unsigned char hash[16];
+    CGDataProviderRef dataProvider;
+    NSData* data;
+    dataProvider = CGImageGetDataProvider(image.CGImage);
+    data = (NSData*)CFDataCreateMutableCopy(NULL, 0, CGDataProviderCopyData(dataProvider));
+    CC_MD5([data bytes], [data length], hash);
+    return [NSString stringWithFormat:
+        @"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
+        hash[0], hash[1], hash[2], hash[3], 
+        hash[4], hash[5], hash[6], hash[7],
+        hash[8], hash[9], hash[10], hash[11],
+        hash[12], hash[13], hash[14], hash[15]
+        ];
+}
+
+@interface MRNowPlayingScreen
+@property(readonly) id titleView;
+@property(retain) UIView * bottomBar;
+@end
+
 %hook MRNowPlayingScreen
 - (void)viewDidLoad
 {
     %orig;
-
     UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPress:)];
     [[self titleView] addGestureRecognizer:longPress];   
     [longPress release];
-
     UIButton *shareBtn = [UIButton buttonWithType:UIButtonTypeInfoLight];
     shareBtn.frame = CGRectMake(10, 34, 30, 30);
     [shareBtn addTarget:self action:@selector(btnTaped:) forControlEvents:UIControlEventTouchDown];
@@ -155,16 +187,16 @@ static inline void PostFunction()
 %hook MRNowPlayingFrontScreen
 - (void)setArtworkImage:(id)arg1
 {
-    artwork = arg1;
     %orig;
+    artwork = arg1;
 }
 %end
 
 %hook MRNowPlayingScreen_iPad
 - (void)setArtworkImage:(id)arg1
 {
-    artwork = arg1;
     %orig;
+    artwork = arg1;
 }
 %end
 
